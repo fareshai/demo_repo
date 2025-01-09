@@ -1,17 +1,8 @@
-# Use an official Golang runtime as the base image
-FROM golang:1.19-alpine
+FROM jenkins/jenkins:lts
 
-# Set the working directory inside the container
-WORKDIR /app
+USER root
 
-# Copy the Go application source code into the working directory
-COPY . /app/
+# Install Go
+RUN apt-get update && apt-get install -y golang
 
-# Build the Go application
-RUN go build -o largest_number_app .
-
-# Expose the port used by the Go app
-EXPOSE 8080
-
-# Run the Go application when the container starts
-CMD ["./largest_number_app"]
+USER jenkins
