@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'golang:1.19-alpine'
+            args '-v /var/lib/jenkins/workspace:/workspace'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = "largest-number-app"
