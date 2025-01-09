@@ -1,38 +1,48 @@
-package main
+pipeline {
+    agent any
 
-import (
-    "fmt"
-    "log"
-    "os/exec"
-)
-
-const dockerImage = "largest-number-app"
-
-func main() {
-    // Clone Repository
-    fmt.Println("Cloning repository...")
-    if err := runCommand("git", "clone", "-b", "main", "https://github.com/fareshai/demo_repo.git"); err != nil {
-        log.Fatalf("Failed to clone repository: %v", err)
+    environment {
+        DOCKER_IMAGE = "largest-number-app"
     }
 
-    // Build Docker Image
-    fmt.Println("Building Docker image...")
-    if err := runCommand("docker", "build", "-t", dockerImage, "."); err != nil {
-        log.Fatalf("Failed to build Docker image: %v", err)
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo 'Cloning repository...'
+                // Assuming the code and Dockerfile are stored in a Git repository
+                git branch: 'main', url: 'https://github.com/fareshai/demo_repo.git'
+            }
+        }
+        stage('Build Go Program') {
+            steps {
+                echo 'Building Go program...'
+                script {
+                    sh 'go build -o largest_number_app main.go'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image...'
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                echo 'Running Docker container...'
+                script {
+                    sh "docker run ${DOCKER_IMAGE}"
+                }
+            }
+        }
     }
 
-    // Run Docker Container
-    fmt.Println("Running Docker container...")
-    if err := runCommand("docker", "run", dockerImage); err != nil {
-        log.Fatalf("Failed to run Docker container: %v", err)
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
     }
-
-    fmt.Println("Pipeline execution completed.")
 }
 
-func runCommand(name string, args ...string) error {
-    cmd := exec.Command(name, args...)
-    cmd.Stdout = log.Writer()
-    cmd.Stderr = log.Writer()
-    return cmd.Run()
-}
