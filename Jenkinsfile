@@ -4,7 +4,7 @@ pipeline {
 
     environment { 
 
-
+        SONARQUBE_SERVER = 'SQ'
         DOCKER_IMAGE = 'helloworld-app:latest' // Replace with your desired image name 
 
         IMAGE_TAG = 'latest' 
@@ -26,7 +26,29 @@ pipeline {
             } 
 
         } 
-    stage('Build Docker Image') { 
+        stage('SonarQube Analysis') { 
+
+            steps { 
+
+                withSonarQubeEnv(SONARQUBE_SERVER) { 
+
+                    sh 'mvn sonar:sonar' 
+
+                } 
+
+            } 
+
+        } 
+        stage('Build WAR File') { 
+
+            steps { 
+
+                sh 'mvn clean package' 
+
+            } 
+
+        } 
+        stage('Build Docker Image') { 
 
             steps { 
 
